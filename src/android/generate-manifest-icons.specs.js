@@ -21,6 +21,7 @@ const expectedFiles = [
   './ic_launcher.png',
   './ic_launcher_round.png',
 ];
+
 //  Create a test for each manifest.
 const testManifests = [{
   projectName: 'React Native Manifest',

@@ -45,15 +45,19 @@ program
   .option('-p, --platforms [optional]', "The platforms to generate icons for. Defaults to 'android,ios'", 'android,ios')
   .option('--background-icon [optional]', "The background icon path. Defaults to 'icon.background.png'")
   .option('--foreground-icon [optional]', "The foreground icon path. Defaults to 'icon.foreground.png'")
-  .option('--adaptive-icons [optional]', "Additionally, generate Android Adaptive Icon templates. Defaults to 'false'")
+  .option('--adaptive-icons [optional]', "Additionally, generate Android adaptive icons. Defaults to 'false'")
+  .option('--notification-icon [optional]', "The notification icon path. Defaults to 'notification.png'")
+  .option('--notification-icons [optional]', "Additionally, generate Android notification icons. Defaults to 'false'")
   .action(async (parameters) => {
     const {
       icon,
       backgroundIcon,
       foregroundIcon,
+      notificationIcon,
       search,
       platforms,
       adaptiveIcons,
+      notificationIcons,
     } = parameters;
 
     await imageMagickCheck();
@@ -67,14 +71,20 @@ program
       const checkPath = foregroundIcon || 'icon.foreground.png';
       await errorIfMissing(checkPath, `Foreground icon file '${checkPath}' does not exist. Add the file or specify foreground icon with the '--foreground-icon' parameter.`);
     }
+    if (notificationIcons) {
+      const checkPath = notificationIcon || 'notification.png';
+      await errorIfMissing(checkPath, `Notification icon file '${checkPath}' does not exist. Add the file or specify notification icon with the '--notification-icon' parameter.`);
+    }
     try {
       await generate({
         sourceIcon: icon,
         backgroundIcon,
         foregroundIcon,
+        notificationIcon,
         searchRoot: search,
         platforms,
         adaptiveIcons,
+        notificationIcons,
       });
     } catch (err) {
       console.error(chalk.red(`An error occurred generating the icons: ${err.message}`));
@@ -116,9 +126,10 @@ program
   .command('init')
   .description('Initialises app icons by creating simple icon templates')
   .option('-c, --caption [caption]', "An optional caption for the icon, e.g 'App'.")
-  .option('--adaptive-icons [optional]', "Additionally, generate Android Adaptive Icon templates. Defaults to 'false'")
+  .option('--adaptive-icons [optional]', "Additionally, generate Android adaptive icon templates. Defaults to 'false'")
+  .option('--notification-icons [optional]', "Additionally, generate Android notification icon template. Defaults to 'false'")
   .action(async (params) => {
-    const { caption, adaptiveIcons } = params;
+    const { caption, adaptiveIcons, notificationIcons } = params;
 
     await imageMagickCheck();
 
@@ -137,6 +148,12 @@ program
         console.log(`Created icon '${chalk.green('icon.background.png')}'`);
         console.log(`Created icon '${chalk.green('icon.foreground.png')}'`);
       }
+
+      if (notificationIcons) {
+        const inputNotification = path.resolve(__dirname, '../src/init/notification.template.png');
+        await init(inputNotification, './notification.png');
+        console.log(`Created icon '${chalk.green('notification.png')}'`);
+      }
     } catch (err) {
       console.error('An error occurred creating the icon...');
       console.log(err);
@@ -153,6 +170,7 @@ program.on('--help', () => {
   console.log('    $ app-icon label -i myicon.png -o myicon.out.png -t qa -b 1.2.3');
   console.log('    $ app-icon init --caption "App"');
   console.log('    $ app-icon init --caption "App" --adaptive-icons');
+  console.log('    $ app-icon init --notification-icons');
   console.log('');
 });
 
